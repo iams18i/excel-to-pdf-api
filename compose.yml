@@ -1,0 +1,10 @@
+services:
+  pdf-converter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    volumes:
+      - ./tmp:/app/tmp
