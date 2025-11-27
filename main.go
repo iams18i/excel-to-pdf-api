@@ -335,8 +335,9 @@ func handleConvert(w http.ResponseWriter, r *http.Request) {
 
 	// Convert the Excel file to PDF using LibreOffice
 	// Use calc_pdf_Export filter with SinglePageSheets option to fit each sheet on one page
+	// Add 50px (~13.2mm) padding on every side via margin properties (values in 1/100 mm)
 	// Filter format: pdf:calc_pdf_Export:{JSON filter data}
-	filterData := `pdf:calc_pdf_Export:{"SinglePageSheets":{"type":"boolean","value":true}}`
+	filterData := `pdf:calc_pdf_Export:{"SinglePageSheets":{"type":"boolean","value":true},"LeftMargin":{"type":"long","value":1320},"RightMargin":{"type":"long","value":1320},"TopMargin":{"type":"long","value":1320},"BottomMargin":{"type":"long","value":1320}}`
 	
 	var stdout, stderr bytes.Buffer
 	cmd := exec.Command("soffice", "--headless", "--nodefault", "--nolockcheck", "--convert-to", filterData, absInputPath, "--outdir", absTempDir)
