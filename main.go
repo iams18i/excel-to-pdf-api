@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/go-pdf/fpdf"
+	"github.com/go-pdf/fpdf/contrib/gofpdi"
 	"github.com/pdfcpu/pdfcpu/pkg/api"
-	"github.com/phpdave11/gofpdi"
 )
 
 const tempDir = "./tmp" // Directory for temporary files
@@ -513,7 +513,13 @@ func addPaddingToPDF(inputPath string, marginMM float64) (string, error) {
 	pdf := fpdf.New("P", "mm", "", "")
 	for page := 1; page <= pageCount; page++ {
 		tpl := gofpdi.ImportPage(pdf, inputPath, page, "/MediaBox")
-		width, height := gofpdi.GetTemplateSize(pdf, tpl)
+		pageSizes := gofpdi.GetPageSizes()
+		boxSizes, ok := pageSizes[page]["/MediaBox"]
+		if !ok {
+			return "", fmt.Errorf("missing page size info for page %d", page)
+		}
+		width := boxSizes["w"]
+		height := boxSizes["h"]
 		pdf.AddPageFormat("P", fpdf.SizeType{Wd: width + marginMM*2, Ht: height + marginMM*2})
 		gofpdi.UseImportedTemplate(pdf, tpl, marginMM, marginMM, width, height)
 	}
