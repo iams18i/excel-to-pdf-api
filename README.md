@@ -95,11 +95,14 @@ Every request (except `GET /` and `GET /health`) must include an API token heade
 2. Send the header `x-auth-token: super-secret-token` with your requests.
 
 Example `curl`:
+
 ```bash
 curl -H "x-auth-token: super-secret-token" \
      -F "file=@example.xlsx" \
      http://localhost:5000/convert --output output.pdf
 ```
+
+Using Swagger? Go to `http://localhost:5000/docs`, click **Authorize**, and paste your token into the `x-auth-token` field. Swagger UI will forward the header with every request.
 
 ---
 

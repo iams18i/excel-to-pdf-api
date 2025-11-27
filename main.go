@@ -121,6 +121,9 @@ func handleOpenAPISpec(w http.ResponseWriter, r *http.Request) {
 				},
 			},
 		},
+		"security": []map[string]interface{}{
+			{"ApiTokenAuth": []interface{}{}},
+		},
 		"paths": map[string]interface{}{
 			"/": map[string]interface{}{
 				"get": map[string]interface{}{
