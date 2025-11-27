@@ -10,7 +10,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
+
+	"github.com/go-pdf/fpdf"
+	"github.com/pdfcpu/pdfcpu/pkg/api"
+	"github.com/phpdave11/gofpdi"
 )
 
 const tempDir = "./tmp" // Directory for temporary files
@@ -419,7 +424,18 @@ func handleConvert(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Printf("PDF file found at: %s\n", pdfPath)
 	}
-	defer os.Remove(pdfPath)
+
+	// Add padding around every page (~50px ≈ 13.2mm)
+	const marginMM = 13.2
+	paddedPath, err := addPaddingToPDF(pdfPath, marginMM)
+	if err != nil {
+		fmt.Printf("Failed to add padding to PDF: %v\n", err)
+		paddedPath = pdfPath
+	} else {
+		defer os.Remove(paddedPath)
+		os.Remove(pdfPath)
+		pdfPath = paddedPath
+	}
 
 	// Read the converted PDF file
 	pdfFile, err := os.Open(pdfPath)
@@ -480,4 +496,31 @@ func authMiddleware(expectedToken string, next http.HandlerFunc) http.HandlerFun
 		}
 		next.ServeHTTP(w, r)
 	}
+}
+
+func addPaddingToPDF(inputPath string, marginMM float64) (string, error) {
+	pageCount, err := api.PageCountFile(inputPath)
+	if err != nil {
+		return "", fmt.Errorf("count pages: %w", err)
+	}
+
+	if pageCount == 0 {
+		return "", fmt.Errorf("pdf has no pages")
+	}
+
+	outputPath := strings.TrimSuffix(inputPath, ".pdf") + "_padded.pdf"
+
+	pdf := fpdf.New("P", "mm", "", "")
+	for page := 1; page <= pageCount; page++ {
+		tpl := gofpdi.ImportPage(pdf, inputPath, page, "/MediaBox")
+		width, height := gofpdi.GetTemplateSize(pdf, tpl)
+		pdf.AddPageFormat("P", fpdf.SizeType{Wd: width + marginMM*2, Ht: height + marginMM*2})
+		gofpdi.UseImportedTemplate(pdf, tpl, marginMM, marginMM, width, height)
+	}
+
+	if err := pdf.OutputFileAndClose(outputPath); err != nil {
+		return "", fmt.Errorf("write padded pdf: %w", err)
+	}
+
+	return outputPath, nil
 }
