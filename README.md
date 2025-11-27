@@ -83,6 +83,24 @@ docker compose up -d --build
 
 This builds the Go binary, installs LibreOffice inside the runtime image, and exposes port `5000`.
 
+### Authentication (required)
+
+Every request (except `GET /` and `GET /health`) must include an API token header.
+
+1. Set the environment variable before starting the service:
+   ```bash
+   export API_TOKEN=super-secret-token
+   docker compose up -d --build
+   ```
+2. Send the header `x-auth-token: super-secret-token` with your requests.
+
+Example `curl`:
+```bash
+curl -H "x-auth-token: super-secret-token" \
+     -F "file=@example.xlsx" \
+     http://localhost:5000/convert --output output.pdf
+```
+
 ---
 
 ## API Usage

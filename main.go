@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -24,11 +25,16 @@ func main() {
 	// Start the file cleanup goroutine
 	go cleanupOldFiles(tempDir, 1*time.Hour)
 
+	apiToken := os.Getenv("API_TOKEN")
+	if apiToken == "" {
+		log.Fatal("API_TOKEN environment variable is required")
+	}
+
 	http.HandleFunc("/", handleHealthCheck)
 	http.HandleFunc("/health", handleHealthCheck)
-	http.HandleFunc("/convert", handleConvert)
-	http.HandleFunc("/docs", handleSwaggerUI)
-	http.HandleFunc("/api/openapi.json", handleOpenAPISpec)
+	http.HandleFunc("/convert", authMiddleware(apiToken, handleConvert))
+	http.HandleFunc("/docs", authMiddleware(apiToken, handleSwaggerUI))
+	http.HandleFunc("/api/openapi.json", authMiddleware(apiToken, handleOpenAPISpec))
 
 	fmt.Println("Starting server on :5000")
 	if err := http.ListenAndServe(":5000", nil); err != nil {
@@ -106,6 +112,15 @@ func handleOpenAPISpec(w http.ResponseWriter, r *http.Request) {
 				"description": "Development server",
 			},
 		},
+		"components": map[string]interface{}{
+			"securitySchemes": map[string]interface{}{
+				"ApiTokenAuth": map[string]interface{}{
+					"type": "apiKey",
+					"in":   "header",
+					"name": "x-auth-token",
+				},
+			},
+		},
 		"paths": map[string]interface{}{
 			"/": map[string]interface{}{
 				"get": map[string]interface{}{
@@ -178,6 +193,9 @@ func handleOpenAPISpec(w http.ResponseWriter, r *http.Request) {
 					"summary":     "Convert Excel to PDF",
 					"description": "Upload an Excel file (.xlsx or .xls) and convert it to PDF using LibreOffice. Each sheet will be rendered in the PDF.",
 					"operationId": "convertExcelToPdf",
+					"security": []map[string]interface{}{
+						{"ApiTokenAuth": []interface{}{}},
+					},
 					"requestBody": map[string]interface{}{
 						"required": true,
 						"content": map[string]interface{}{
@@ -446,5 +464,16 @@ func cleanupOldFiles(dir string, maxAge time.Duration) {
 				}
 			}
 		}
+	}
+}
+
+func authMiddleware(expectedToken string, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("x-auth-token")
+		if token == "" || token != expectedToken {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
 	}
 }
