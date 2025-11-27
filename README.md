@@ -98,7 +98,7 @@ Every request (except `GET /` and `GET /health`) must include an API token heade
    export API_TOKEN=super-secret-token
    docker compose up -d --build
    ```
-3. Send the header `x-auth-token: <your token>` with your requests.
+3. Send the header `x-auth-token: <your token>` with your requests. (Swagger UI and `/docs` remain publicly accessible; only `/convert` requires the token.)
 
 Example `curl`:
 

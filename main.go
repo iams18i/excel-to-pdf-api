@@ -32,9 +32,9 @@ func main() {
 
 	http.HandleFunc("/", handleHealthCheck)
 	http.HandleFunc("/health", handleHealthCheck)
+	http.HandleFunc("/docs", handleSwaggerUI)
+	http.HandleFunc("/api/openapi.json", handleOpenAPISpec)
 	http.HandleFunc("/convert", authMiddleware(apiToken, handleConvert))
-	http.HandleFunc("/docs", authMiddleware(apiToken, handleSwaggerUI))
-	http.HandleFunc("/api/openapi.json", authMiddleware(apiToken, handleOpenAPISpec))
 
 	fmt.Println("Starting server on :5000")
 	if err := http.ListenAndServe(":5000", nil); err != nil {
