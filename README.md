@@ -87,7 +87,7 @@ This builds the Go binary, installs LibreOffice inside the runtime image, and ex
 
 Every request (except `GET /` and `GET /health`) must include an API token header.
 
-1. **Docker Compose** now sets a default dev token (`dev-secret-token`). Override it by exporting `API_TOKEN` before running Compose.
+1. **Docker Compose** now sets a default dev token (`2f6b3c48c8c1401d8af8fbd613b5b9e9`). Override it by exporting `API_TOKEN` before running Compose.
    ```bash
    export API_TOKEN=my-prod-token
    docker compose up -d --build

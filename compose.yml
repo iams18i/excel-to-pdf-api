@@ -10,4 +10,4 @@ services:
       - ./tmp:/app/tmp
     environment:
       # Override API_TOKEN in your shell to change this value
-      - API_TOKEN=${API_TOKEN:-dev-secret-token}
+      - API_TOKEN=${API_TOKEN:-2f6b3c48c8c1401d8af8fbd613b5b9e9}
