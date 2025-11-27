@@ -87,12 +87,18 @@ This builds the Go binary, installs LibreOffice inside the runtime image, and ex
 
 Every request (except `GET /` and `GET /health`) must include an API token header.
 
-1. Set the environment variable before starting the service:
+1. **Docker Compose** now sets a default dev token (`dev-secret-token`). Override it by exporting `API_TOKEN` before running Compose.
+   ```bash
+   export API_TOKEN=my-prod-token
+   docker compose up -d --build
+   ```
+   If you skip the export, the service uses `dev-secret-token`.
+2. For manual runs (without Compose), set the variable yourself:
    ```bash
    export API_TOKEN=super-secret-token
    docker compose up -d --build
    ```
-2. Send the header `x-auth-token: super-secret-token` with your requests.
+3. Send the header `x-auth-token: <your token>` with your requests.
 
 Example `curl`:
 

@@ -8,3 +8,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./tmp:/app/tmp
+    environment:
+      # Override API_TOKEN in your shell to change this value
+      - API_TOKEN=${API_TOKEN:-dev-secret-token}
