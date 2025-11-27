@@ -1,14 +1,17 @@
-# Office to PDF Converter
+# Excel/Office → PDF API (Go + LibreOffice)
 
-This is a simple HTTP server application written in Go that converts uploaded office files into PDF files using LibreOffice in headless mode. The server listens on port `5000` and exposes a single endpoint for file conversion. It also includes automatic cleanup of temporary files older than one hour.
+This repository exposes a minimal Go HTTP API that receives Excel/Office files and returns PDFs generated through LibreOffice (headless).  
+It is the backend service that now powers the `pdf-to-excel-api` project and replaces the earlier Node implementation.  
+Originally based on [wteja/pdf-converter](https://github.com/wteja/pdf-converter) – all credits to the original author – but heavily adapted (Swagger docs, single-page sheets, container build, etc.).
 
 ## Features
 
 - Converts various office files to PDF format using LibreOffice.
-- Handles file uploads via HTTP POST requests.
+- Handles file uploads via HTTP POST requests (multipart form data).
 - Automatic cleanup of old files from the temporary directory after one hour.
-- Minimal and efficient implementation using Go.
-- **Swagger/OpenAPI documentation** - Interactive API documentation available at `/docs`.
+- Minimal and efficient implementation using Go + LibreOffice headless.
+- **Each spreadsheet sheet renders as a single PDF page** thanks to the `SinglePageSheets` filter.
+- **Swagger/OpenAPI documentation** – interactive UI at `/docs` + raw spec at `/api/openapi.json`.
 
 ## Requirements
 
@@ -46,11 +49,14 @@ This application relies on LibreOffice for file conversion, so it supports any f
 
 ## Installation
 
+> The service is typically consumed via Docker (see below).  
+> If you prefer building from source:
+
 1. Clone the repository:
 
    ```bash
-   git clone <repository_url>
-   cd <repository_directory>
+   git clone git@github.com:iams18i/pdf-to-excel-api.git
+   cd pdf-to-excel-api
    ```
 
 2. Install dependencies:
@@ -68,6 +74,16 @@ This application relies on LibreOffice for file conversion, so it supports any f
    ```
 
 The server will start listening on `http://localhost:5000`.
+
+## Quick start (Docker Compose)
+
+```bash
+docker compose up -d --build
+```
+
+This builds the Go binary, installs LibreOffice inside the runtime image, and exposes port `5000`.
+
+---
 
 ## API Usage
 
@@ -106,7 +122,7 @@ curl -X POST -F "file=@example.xlsx" http://localhost:5000/convert --output outp
 
 ## Public Docker Image
 
-You can use the publicly available Docker image for this application:
+While this repository focuses on the self-hosted `pdf-to-excel-api`, the image is still compatible with the public `wteja/pdf-converter` image:
 
 ```bash
 docker pull wteja/pdf-converter
@@ -156,4 +172,5 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Author
 
-Developed by [Weerayut Teja](https://github.com/wteja). Contributions and feedback are welcome!
+Adapted for `pdf-to-excel-api` by [iams18i](https://github.com/iams18i).  
+Original implementation by [Weerayut Teja](https://github.com/wteja) – thank you!
